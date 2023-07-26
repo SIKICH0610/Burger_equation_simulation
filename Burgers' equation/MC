@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import eval_hermite
 
-x_start, x_end = 0, 5
+x_start, x_end = 0, 3
 t_start, t_end = 0, 0.2
-num_points_x = 100 # Number of grid points in the x direction
+num_points_x = 60 # Number of grid points in the x direction
 num_points_t = 200 # Number of grid points in the t direction
 x_vals = np.linspace(x_start, x_end, num_points_x)
 t_vals = np.linspace(t_start, t_end, num_points_t)
@@ -101,5 +101,4 @@ plt.show()
 ax.set_xlabel('x')
 ax.set_ylabel('t')
 ax.set_zlabel('u')
-ax.set_zlim(-0.2,0.2)
 plt.show()
