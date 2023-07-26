@@ -1,0 +1,105 @@
+# coding by zhaolong deng
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import eval_hermite
+
+x_start, x_end = 0, 5
+t_start, t_end = 0, 0.2
+num_points_x = 100 # Number of grid points in the x direction
+num_points_t = 200 # Number of grid points in the t direction
+x_vals = np.linspace(x_start, x_end, num_points_x)
+t_vals = np.linspace(t_start, t_end, num_points_t)
+origin_matrix = np.zeros((num_points_t, num_points_x))
+
+def Runge_Kutta_method(y_last, k1, k2, k3, k4, delta_t):
+    y_new = y_last + delta_t * (k1 + 2 * k2 + 2 * k3 + k4)/6
+    return y_new
+
+def d_dx(vector, delta_x):
+    result_vector = np.zeros(vector.shape[0])
+    result_vector[0] = (vector[1]-vector[0])/delta_x
+    for i in range(1,(vector.shape[0]-1)):
+        result_vector[i] = (vector[i+1]-vector[i-1])/(2*delta_x)
+    result_vector[-1] = (vector[-1]-vector[-2])/delta_x
+
+    return result_vector
+
+def du0_dt(u0, u1, delta_x):
+    du0_dx = d_dx(u0, delta_x)
+    du1_dx = d_dx(u1, delta_x)
+    result_vec = (-1 * np.multiply(du0_dx,u0)) + (-1 * np.multiply(du1_dx,u1))
+    return result_vec
+
+def du1_dt(u0, u1, delta_x):
+    du0_dx = d_dx(u0, delta_x)
+    du1_dx = d_dx(u1, delta_x)
+    result_vec = (-1 * np.multiply(du0_dx,u1)) + (-1 * np.multiply(du1_dx,u0))
+    return result_vec
+
+
+def Second_d_dx(u, delta_x):
+    result_vec = np.zeros(u.shape[0])
+    result_vec[0] = (u[2] - 2 * u[1] + u[0])/delta_x**2
+    for i in range(1, u.shape[0] - 1):
+        result_vec[i] = (u[i + 1] - 2 * u[i] + u[i - 1])/delta_x**2
+    result_vec[-1] = (u[-1] - 2 * u[-2] + u[-3])/delta_x**2
+    return result_vec
+
+
+def RK_helper_MC(u0, delta_x, delta_t, v):
+    k1 = -u0 * d_dx(u0, delta_x) + v * Second_d_dx(u0, delta_x)
+    k2 = -((u0 + k1 * delta_t / 2) * d_dx(u0, delta_x)) + v * Second_d_dx(u0, delta_x)
+    k3 = -((u0 + k2 * delta_t / 2) * d_dx(u0, delta_x)) + v * Second_d_dx(u0, delta_x)
+    k4 = -((u0 + k3 * delta_t) * d_dx(u0, delta_x)) + v * Second_d_dx(u0, delta_x)
+    result_u0 = Runge_Kutta_method(u0, k1, k2, k3, k4, delta_t)
+    return result_u0
+
+
+def MC_computing(Grid2D0, x_start, x_end, t_start, t_end, v):
+    gridsize = Grid2D0.shape
+    x_gridsize = gridsize[1]
+    t_gridsize = gridsize[0]
+    delta_x = (x_end - x_start) / x_gridsize
+    delta_t = (t_end - t_start) / t_gridsize
+    for i in range(0, t_gridsize - 1):
+        matrix_slice = Grid2D0[i, :]
+        Grid2D0[i + 1,:] = RK_helper_MC(matrix_slice, delta_x, delta_t, v)
+    return Grid2D0
+
+
+
+def revise_sequence(sequence, n):
+    revised_sequence = [eval_hermite(n, x) for x in sequence]
+    return revised_sequence
+
+def MC(origin_matrix, time_of_simu):
+    xi = np.random.normal(0, 1, time_of_simu) + 0.5
+
+    print(np.average(xi))
+    result_matrix = np.zeros((num_points_t, num_points_x))
+    for k in range(time_of_simu):
+        origin_matrix[0, :] = np.sin(x_vals) * xi[k]
+        result_matrix += MC_computing(origin_matrix, x_start, x_end, t_start, t_end, 0.05)
+    return result_matrix / (time_of_simu-1)
+
+
+
+
+X, T = np.meshgrid(x_vals, t_vals)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+result = MC(origin_matrix, 50)
+ax.plot_surface(X, T, result , cmap='viridis')
+fig = plt.figure()
+test_slice1 = result[0,:]
+plt.plot(x_vals,test_slice1)
+test_slice1 = result[100,:]
+plt.plot(x_vals,test_slice1)
+test_slice1 = result[199,:]
+plt.plot(x_vals,test_slice1)
+plt.show()
+ax.set_xlabel('x')
+ax.set_ylabel('t')
+ax.set_zlabel('u')
+ax.set_zlim(-0.2,0.2)
+plt.show()
