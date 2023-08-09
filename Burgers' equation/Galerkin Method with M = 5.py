@@ -1,6 +1,8 @@
+# coding by zhaolong deng
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.special import eval_hermite
+from scipy.special import eval_hermite, eval_hermitenorm
+
 
 def determine_validindex(size1,size2,k):
     for i in range(0,size1 + 1):
@@ -44,7 +46,7 @@ def d_d0_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     du4_dx = d_dx(u4, delta_x)
     du5_dx = d_dx(u5, delta_x)
     result_vector = -u0 * du0_dx - u1 * du1_dx - 2 * u2 * du2_dx - 6 * u3 * du3_dx \
-                    - 24 * u4 * du4_dx - 36 * u5 * du5_dx + v * Second_d_dx(u0, delta_x)
+                    - 24 * u4 * du4_dx - 120 * u5 * du5_dx + v * Second_d_dx(u0, delta_x)
     return result_vector / np.math.factorial(0)
 
 def d_d1_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
@@ -57,7 +59,7 @@ def d_d1_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     result_vector = -u0 * du1_dx - u1 * du0_dx - 2 * u1 * du2_dx - 2 *u2 * du1_dx - 6 * u2 * du3_dx - \
                     6 * u3 * du2_dx - 24 * u3 * du4_dx - 24 * u4 * du3_dx * - 120 * u4 * du5_dx - \
                     120 * u5 * du4_dx
-    return  (result_vector / np.math.factorial(1)) + v * Second_d_dx(u0, delta_x)
+    return  (result_vector / np.math.factorial(1)) + v * Second_d_dx(u1, delta_x)
 
 def d_d2_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     du0_dx = d_dx(u0, delta_x)
@@ -70,7 +72,7 @@ def d_d2_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
                     - 2 * u2 * du0_dx - 8 * u2 * du2_dx - \
                     24 * u2 * du4_dx - 6 * u3 * du1_dx - 36 * u3 * du3_dx * - 120 * u3 * du5_dx - \
                     24 * u4 * du2_dx - 192 * u4 * du4_dx - 120 * u5 * du5_dx - 1200 * u5 * du5_dx
-    return  (result_vector / np.math.factorial(2)) + v * Second_d_dx(u0, delta_x)
+    return  (result_vector / np.math.factorial(2)) + v * Second_d_dx(u2, delta_x)
 
 def d_d3_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     du0_dx = d_dx(u0, delta_x)
@@ -83,7 +85,7 @@ def d_d3_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
                     120 * u2 * du5_dx - 6 * u3 * du0_dx - 36 * u3 * du2_dx * - 216 * u3 * du4_dx - \
                     24 * u4 * du1_dx - 216 * u4 * du3_dx - 1440 * u4 * du5_dx - 120 * u5 * du2_dx -\
                     1440 * u5 * du4_dx
-    return  (result_vector / np.math.factorial(3)) + v * Second_d_dx(u0, delta_x)
+    return  (result_vector / np.math.factorial(3)) + v * Second_d_dx(u3, delta_x)
 
 def d_d4_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     du0_dx = d_dx(u0, delta_x)
@@ -96,9 +98,10 @@ def d_d4_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
                     24 * u3 * du1_dx - 216 * u3 * du3_dx - 1440 * u3 * du5_dx * - 24 * u4 * du0_dx - \
                     192 * u4 * du2_dx - 1728 * u4 * du4_dx - 120 * u5 * du1_dx - 1440 * u5 * du3_dx - \
                     14400 * u5 * du5_dx
-    return  (result_vector / np.math.factorial(4)) + v * Second_d_dx(u0, delta_x)
+    return  (result_vector / np.math.factorial(4)) + v * Second_d_dx(u4, delta_x)
 
 def d_d5_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
+    # u is not changing for second derivative
     du0_dx = d_dx(u0, delta_x)
     du1_dx = d_dx(u1, delta_x)
     du2_dx = d_dx(u2, delta_x)
@@ -108,7 +111,7 @@ def d_d5_dt(u0, u1, u2, u3, u4, u5, delta_x, v):
     result_vector = -120 * u0 * du5_dx - 120 * u1 * du4_dx - 120 * u2 * du3_dx - 1200 * u2 * du5_dx - 120 * u3 * du2_dx - \
                     1440 * u3 * du4_dx - 120 * u4 * du1_dx - 1440 * u4 * du3_dx * - 14400 * u4 * du5_dx - \
                     120 * u5 * du0_dx - 1200 * u5 * du2_dx - 14400 * u5 * du4_dx
-    return  (result_vector / np.math.factorial(5)) + v * Second_d_dx(u0, delta_x)
+    return  (result_vector / np.math.factorial(5)) + v * Second_d_dx(u5, delta_x)
 
 def RK_helper_Galerkin(u0, u1, u2, u3, u4, u5, delta_x, delta_t, v):
     k1_0, k1_1, k1_2, k1_3, k1_4, k1_5 = d_d0_dt(u0,u1,u2,u3,u4,u5,delta_x, v), d_d1_dt(u0,u1,u2,u3,u4,u5,delta_x, v),\
@@ -135,7 +138,7 @@ def RK_helper_Galerkin(u0, u1, u2, u3, u4, u5, delta_x, delta_t, v):
     result_u0 = Runge_Kutta_method(u0, k1_0, k2_0, k3_0, k4_0, delta_t)
     result_u1 = Runge_Kutta_method(u1, k1_1, k2_1, k3_1, k4_1, delta_t)
     result_u2 = Runge_Kutta_method(u2, k1_2, k2_2, k3_2, k4_2, delta_t)
-    result_u3 = Runge_Kutta_method(u3, k1_3, k2_3, k3_3, k4_3,- delta_t)
+    result_u3 = Runge_Kutta_method(u3, k1_3, k2_3, k3_3, k4_3, delta_t)
     result_u4 = Runge_Kutta_method(u4, k1_4, k2_4, k3_4, k4_4, delta_t)
     result_u5 = Runge_Kutta_method(u5, k1_5, k2_5, k3_5, k4_5, delta_t)
     return result_u0, result_u1, result_u2, result_u3, result_u4, result_u5
@@ -178,10 +181,18 @@ u3 = np.zeros((num_points_t, num_points_x))
 u4 = np.zeros((num_points_t, num_points_x))
 u5 = np.zeros((num_points_t, num_points_x))
 u1[0, :] = np.sin(x_vals)
-u0, u1, u2, u3, u4, u5 = Galerkincomputing(u0, u1, u2, u3, u4, u5, x_start, x_end, t_start, t_end, 0.9)
-result_matrix = u0 + revise_sequence(np.random.normal(0,1,1),1) * u1 + revise_sequence(np.random.normal(0,1,1),2) * u2 +\
-                revise_sequence(np.random.normal(0,1,1),3) * u3 + revise_sequence(np.random.normal(0,1,1),4) * u4 +\
-                revise_sequence(np.random.normal(0,1,1),4) * u4 + revise_sequence(np.random.normal(0,1,1),5) * u5
+u0, u1, u2, u3, u4, u5 = Galerkincomputing(u0, u1, u2, u3, u4, u5, x_start, x_end, t_start, t_end, 0.05)
+random_num = [0.09]
+xi0 = revise_sequence(random_num,0)
+xi1 = revise_sequence(random_num,1)
+xi2 = revise_sequence(random_num,2)
+xi3 = revise_sequence(random_num,3)
+xi4 = revise_sequence(random_num,4)
+xi5 = revise_sequence(random_num,5)
+
+print(random_num, xi0, xi1, xi2, xi3, xi4, xi5)
+result_matrix = xi0 * u0 + xi1 * u1 + xi2 * u2 +\
+                xi3 * u3 + xi4 * u4 + xi5 * u5
 X, T = np.meshgrid(x_vals, t_vals)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -189,4 +200,5 @@ ax.plot_surface(X, T, result_matrix, cmap='viridis')
 ax.set_xlabel('x')
 ax.set_ylabel('t')
 ax.set_zlabel('u')
+ax.set_zlim3d(-0.2,0.2)
 plt.show()
