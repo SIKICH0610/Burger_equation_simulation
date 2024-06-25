@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.special import eval_hermite
-from GalerkinMethod import GalerkinSolver, create_coeff_matrix
+from Galerkin_Solver import GalerkinSolver, create_coeff_matrix
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 
